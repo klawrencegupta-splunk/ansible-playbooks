@@ -1,23 +1,23 @@
-#placeholder for ansible automation playbook for MDS project
 - hosts:
     - sds
   tasks:
     - git:
         repo: 'https://github.com/klawrencegupta-splunk/sds.git'
-        dest: /opt/git_repo
+        dest: /opt/splunk/etc/deployment-apps
       become: yes
       become_user: root
-    - name: check if links exist
+    - name: check if the serverclass.conf exists
       stat: 
-      path: /opt/splunk/etc/system/local/serverclass.conf
+        path: /opt/splunk/etc/deployment-apps/serverclass.conf
       register: serverclass
-    - name: Create symlink - file module not working
-      shell: cd /opt/splunk/etc/deployment-apps; ln -s /opt/git_repo/* .
       become: yes
       become_user: root
-      when: serverclass.stat.exists == true
     - name: link serverclass.conf to local for precedence
-      shell: cd /opt/splunk/etc/system/local; ln -s /opt/git_repo/serverclass.conf .
-      when: serverclass.stat.exists == true
+      shell: ln -s /opt/splunk/etc/deployment-apps/serverclass.conf /opt/splunk/etc/system/local/.
+      when: serverclass.stat.exists == false
+      become: yes
+      become_user: root
+    - name: restart Splunk
+      shell: /opt/splunk/bin/./splunk restart
       become: yes
       become_user: root
